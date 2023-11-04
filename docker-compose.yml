@@ -1,0 +1,41 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ./:/app
+      - ./infra/prod.ini:/usr/local/etc/php/conf.d/prod.ini
+    working_dir: /app
+    depends_on:
+      - database
+  web:
+    image: nginx:1.25
+    ports:
+      - "8123:80"
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./storage/app/public:/app/public/storage
+    depends_on:
+      - app
+  database:
+    image: mysql:8
+    environment:
+      MYSQL_USER: "Disys"
+      MYSQL_PASSWORD: "senhaDisys"
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "PastelDB"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./infra/mysql:/var/lib/mysql
+  mailpit:
+    image: axllent/mailpit:v1.6.13
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+  cache:
+    image: redis:7
