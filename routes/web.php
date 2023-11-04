@@ -14,5 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $data = [
+        "message" => "Hello World, It's workink!"
+    ];
+
+    return response()->json([$data]);
 });
