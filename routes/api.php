@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\ProductTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,5 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('/customer', CustomerController::class);
-Route::post('/customer/{customer}/restore', [CustomerController::class, 'restore']);
+Route::apiResource('/customers', CustomerController::class);
+Route::post('/customers/{customer}/restore', [CustomerController::class, 'restore']);
+
+Route::apiResource('/product-types', ProductTypeController::class);
+Route::post('/product-types/{productType}/restore', [ProductTypeController::class, 'restore']);
