@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,3 +26,6 @@ Route::post('/customers/{customer}/restore', [CustomerController::class, 'restor
 
 Route::apiResource('/product-types', ProductTypeController::class);
 Route::post('/product-types/{productType}/restore', [ProductTypeController::class, 'restore']);
+
+Route::apiResource('/products', ProductController::class);
+Route::post('/products/{product}/restore', [ProductController::class, 'restore']);
