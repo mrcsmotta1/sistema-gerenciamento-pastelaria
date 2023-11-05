@@ -70,7 +70,7 @@ class Base64File implements Rule
             }
 
             if (strlen($decoded) > 400000) {
-                $this->error = 'O campo :attribute não possui um arquivo maior que 400 bytes e não é permitido.';
+                $this->error = 'O campo :attribute possui um arquivo maior que 400 bytes e não é permitido.';
                 return false;
             }
 
