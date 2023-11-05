@@ -38,6 +38,11 @@ Aguarde até que o comando acima tenha como uma das últimas linhas a mensagem _
 ```shell
 docker compose exec app php artisan migrate --seed
 ```
+
+8. Para criar o banco de dados, execute:
+```shell
+docker compose exec app php artisan storage:link
+```
 > Note: Projeto pode ser acessado através do endereço http://localhost:8123
 
 > Note: API já estará acessível através do endereço http://localhost:8123/api
