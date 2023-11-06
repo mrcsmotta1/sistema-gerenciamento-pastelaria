@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Model
+ * @package  App\Models
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -17,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @license  MIT License
  * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
  */
-class Product extends Model
+class Product extends BaseModel
 {
     use HasFactory;
     use SoftDeletes;

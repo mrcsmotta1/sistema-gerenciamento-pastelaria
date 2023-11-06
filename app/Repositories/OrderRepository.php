@@ -13,12 +13,14 @@
 
 namespace App\Repositories;
 
-use App\Http\Requests\OrderApiRequest;
+use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Product;
-use Illuminate\Http\JsonResponse;
+use App\Mail\OrderCreated;
 use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\OrderApiRequest;
 
 /**
  * Class ProductRepository
@@ -84,6 +86,9 @@ class OrderRepository
         );
 
         $orderSave->save();
+        $orderNumber = $orderSave->id;
+        $dateOfBirth = Carbon::parse($orderSave->customer->date_of_birth)
+            ->format('d/m/Y');
 
         foreach ($order->products as $productData) {
             $orderItem = new OrderItem(
@@ -100,6 +105,9 @@ class OrderRepository
             'message' => 'Order created successfully',
             'order' => $orderSave,
         ];
+
+        Mail::to($orderSave->customer->email)
+            ->send(new OrderCreated($orderSave, $orderNumber, $dateOfBirth));
 
         return response()->json([$message], Response::HTTP_CREATED);
     }
