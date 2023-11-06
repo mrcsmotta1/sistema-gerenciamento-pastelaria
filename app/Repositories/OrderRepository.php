@@ -107,7 +107,7 @@ class OrderRepository
         ];
 
         Mail::to($orderSave->customer->email)
-            ->send(new OrderCreated($orderSave, $orderNumber, $dateOfBirth));
+            ->queue(new OrderCreated($orderSave, $orderNumber, $dateOfBirth));
 
         return response()->json([$message], Response::HTTP_CREATED);
     }
