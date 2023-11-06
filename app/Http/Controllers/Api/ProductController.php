@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Controller
+ * @package  App\Http\Controllers
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -26,8 +37,10 @@ class ProductController extends Controller
      * @param ProductRepository $productRepository Product repository instance.
      * @param ProductService    $productService    Product service instance.
      */
-    public function __construct(private ProductRepository $productRepository, private ProductService $productService)
-    {
+    public function __construct(
+        private ProductRepository $productRepository,
+        private ProductService $productService
+    ) {
     }
 
     /**
@@ -45,14 +58,18 @@ class ProductController extends Controller
      *
      * @param \App\Http\Requests\ProductApiRequest $request The product data.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response with the newly created product and HTTP status 201 (Created).
+     * @return \Illuminate\Http\JsonResponse A JSON response.
      */
     public function store(ProductApiRequest $request)
     {
         $data = $request->validated();
         $product = $this->productRepository->add($data);
+        $message = [
+            'message' => 'Product created successfully',
+            'product' => $product,
+        ];
 
-        return response()->json(['message' => 'Product created successfully', 'product' => $product], Response::HTTP_CREATED);
+        return response()->json([$message], Response::HTTP_CREATED);
     }
 
     /**
@@ -75,7 +92,7 @@ class ProductController extends Controller
      * @param \App\Http\Requests\ProductApiRequest $request The updated product data.
      * @param \App\Models\Product                  $product The product to update.
      *
-     * @return \Illuminate\Http\JsonResponse          A JSON response with the updated product.
+     * @return \Illuminate\Http\JsonResponse       A JSON response.
      */
     public function update(ProductApiRequest $request, $product)
     {
@@ -85,7 +102,8 @@ class ProductController extends Controller
             return response()->json(['message' => 'Product not found.'], 404);
         }
 
-        return response()->json($this->productRepository->update($product, $request));
+        return response()
+            ->json($this->productRepository->update($product, $request));
     }
 
     /**
@@ -112,7 +130,7 @@ class ProductController extends Controller
      *
      * @param int $product The ID of the product to restore.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response indicating the product has been successfully restored.
+     * @return \Illuminate\Http\JsonResponse A JSON response.
      */
     public function restore(int $product)
     {
