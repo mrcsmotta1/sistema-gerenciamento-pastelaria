@@ -17,7 +17,7 @@
 **Produtos no Pedido:**
 @foreach ($order->items as $item)
 - **Produto:** {{$item->product->name }}
-- **Quantidade:**{{ $item->quantity }}
+- **Quantidade:** {{ $item->quantity }}
 - **Preço Unitário:** R${{ number_format($item->product->price, 2, ',', '.') }}
 - **Subtotal:** R${{ number_format($item->quantity * $item->product->price, 2, ',', '.') }}
 <br>
