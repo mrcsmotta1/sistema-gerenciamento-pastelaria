@@ -1,7 +1,7 @@
 <?php
 
 /**
- * MyClass File Doc Comment.
+ * MyClass File Doc Comment
  * php version 8.1
  *
  * @category Mails
