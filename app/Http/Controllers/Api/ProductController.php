@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductApiRequest;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
+use App\Rules\Base64File;
 use App\Services\ProductService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -36,10 +37,12 @@ class ProductController extends Controller
      *
      * @param ProductRepository $productRepository Product repository instance.
      * @param ProductService    $productService    Product service instance.
+     * @param Base64File        $base64File        base64File rules instance.
      */
     public function __construct(
         private ProductRepository $productRepository,
-        private ProductService $productService
+        private ProductService $productService,
+        private Base64File $base64File
     ) {
     }
 
@@ -62,7 +65,10 @@ class ProductController extends Controller
      */
     public function store(ProductApiRequest $request)
     {
-        $data = $request->validated();
+        $data = $request->all();
+        $modifiedBase64 = $this->base64File::getModifiedBase64();
+        $data['photo'] = $modifiedBase64;
+
         $product = $this->productRepository->add($data);
         $message = [
             'message' => 'Product created successfully',
@@ -77,7 +83,7 @@ class ProductController extends Controller
      *
      * @param string $id The ID of the product to retrieve.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return Product $result
      */
     public function show(string $id)
     {
@@ -98,12 +104,16 @@ class ProductController extends Controller
     {
         $product = Product::find($product);
 
+        $data = $request->all();
+
+        $data['photo'] = $this->base64File::getModifiedBase64() ?? $data['photo'];
+
         if (!$product) {
             return response()->json(['message' => 'Product not found.'], 404);
         }
 
         return response()
-            ->json($this->productRepository->update($product, $request));
+            ->json($this->productRepository->update($product, $data));
     }
 
     /**
