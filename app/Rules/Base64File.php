@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\File;
 class Base64File implements Rule
 {
     public $error;
+    public static $modifiedBase64 = null;
 
     /**
      * Determine if the given value passes the validation rule.
@@ -45,7 +46,11 @@ class Base64File implements Rule
     public function passes($attribute, $value)
     {
         if (is_string($value)) {
-            $decoded = base64_decode($value, true);
+            $img = explode("base64,", $value);
+            $base64Data = end($img);
+
+            $decoded = base64_decode($base64Data, true);
+
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($decoded);
 
@@ -65,7 +70,7 @@ class Base64File implements Rule
 
             $extensions = config('myconfig.extensions');
             if (!array_key_exists($mimeType, $extensions)) {
-                $this->error = 'O campo :attribute não possui uma extensão do arquivo não é permitida.';
+                $this->error = 'O campo :attribute não possui uma extensão do arquivo não é permitida (jpg, png, gif).';
                 return false;
             }
 
@@ -73,6 +78,8 @@ class Base64File implements Rule
                 $this->error = 'O campo :attribute possui um arquivo maior que 400 bytes e não é permitido.';
                 return false;
             }
+
+            static::$modifiedBase64 = $base64Data;
 
             return $decoded !== false && $decoded !== null;
         }
@@ -88,5 +95,15 @@ class Base64File implements Rule
     public function message()
     {
         return $this->error;
+    }
+
+    /**
+     * Returns the modified string in base64 format or an empty string.
+     *
+     * @return string|"" The modified string in base64 format, or an empty string if there is no value.
+     */
+    public static function getModifiedBase64()
+    {
+        return self::$modifiedBase64;
     }
 }
