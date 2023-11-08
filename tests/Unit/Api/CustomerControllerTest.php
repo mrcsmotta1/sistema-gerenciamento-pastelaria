@@ -14,9 +14,9 @@
 namespace Tests\Unit\Api;
 
 use App\Models\Customer;
-use Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
  * Class CustomerControllerTest
@@ -41,7 +41,7 @@ class CustomerControllerTest extends TestCase
      *
      * @return void
      */
-    public function test_create_customer_controller(): void
+    public function test_test_create_customer_controller(): void
     {
         $this->assertTrue(true);
     }
@@ -57,7 +57,6 @@ class CustomerControllerTest extends TestCase
         $customers = Customer::factory(3)->create();
         $response = $this->getJson('/api/customers');
 
-        // dd($response->baseResponse);
         $sortedCollection = $customers->sortBy('name');
 
         $response->assertStatus(200);
@@ -105,7 +104,7 @@ class CustomerControllerTest extends TestCase
         $response = $this->postJson('/api/customers', $customer);
 
         $response->assertStatus(201);
-        // dd($response);
+
         $response->assertJson(function (AssertableJson $json) use ($customer) {
             $json->whereAllType([
                 'name' => 'string',
@@ -144,13 +143,10 @@ class CustomerControllerTest extends TestCase
     {
         $customer = Customer::factory(1)->createOne();
 
-        // dd($customer);
         $response = $this->getJson('/api/customers/' . $customer->id);
 
         $response->assertStatus(200);
         $response->assertJsonCount(12);
-
-        // dd($response);
 
         $response->assertJsonStructure([
             'id',
@@ -221,8 +217,6 @@ class CustomerControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(12);
 
-        // dd($response);
-
         $response->assertJsonStructure([
             'id',
             'name',
@@ -268,14 +262,13 @@ class CustomerControllerTest extends TestCase
     /**
      * Test the 'destroy' endpoint for deleting a customer.
      *
-     * This test verifies that the 'destroy' endpoint in the customers controller correctly handles
+     * This test verifies that the 'soft deleted' endpoint in the customers controller correctly handles
      * the deletion of a customer based on the provided identifier.
      */
     public function test_delete_destroy_customers_endpoint(): void
     {
         Customer::factory(1)->createOne();
 
-        // dd($customer);
         $response = $this->deleteJson('/api/customers/1');
 
         $response->assertStatus(204);
@@ -302,19 +295,14 @@ class CustomerControllerTest extends TestCase
     }
 
     /**
-     * Test that a unique email constraint is enforced when creating a customer.
+     * Test that the "show" endpoint for a customer returns an error
+     * when the requested customer does not exist.
      *
-     * This test ensures that the controller correctly enforces a unique constraint on the email
-     * field when creating a customer. It checks that attempting to create a customer with a
-     * duplicate email results in an appropriate error response.
+     * @return void
      */
     public function test_get_show_customer_must_return_error_when_customer_does_not_exist(): void
     {
-        $customer = Customer::factory(1)->createOne();
-
-        // dd($customer);
         $response = $this->getJson('/api/customers/2');
-
 
         $response->assertStatus(404);
         $response->assertJson([
@@ -328,6 +316,8 @@ class CustomerControllerTest extends TestCase
      * This test ensures that the controller correctly enforces a unique constraint on the email
      * field when creating a customer. It checks that attempting to create a customer with a
      * duplicate email results in an appropriate error response.
+     *
+     * @return void
      */
     public function test_unique_email_constraint_when_creating_customer(): void
     {
@@ -386,7 +376,7 @@ class CustomerControllerTest extends TestCase
         ]);
     }
 
-     /**
+    /**
      * Test that the 'phone' field must be required when creating a customer.
      *
      * This test verifies that the 'phone' field is a required field when creating a customer.
