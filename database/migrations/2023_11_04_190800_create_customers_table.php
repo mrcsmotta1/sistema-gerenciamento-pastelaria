@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('complement')->nullable();
             $table->string('neighborhood');
             $table->string('zipcode');
-            $table->timestamp('registration_date')->useCurrent();
             $table->timestamps();
             $table->softDeletes();
         });
