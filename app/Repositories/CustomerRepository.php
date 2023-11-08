@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Repository
+ * @package  App\Repositories
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Repositories;
 
 use App\Http\Requests\CustomerApiRequest;
@@ -48,7 +59,7 @@ class CustomerRepository
      * Update an existing customer.
      *
      * @param Customer           $customer The customer to update.
-     * @param CustomerApiRequest $request  The HTTP request containing updated customer data.
+     * @param CustomerApiRequest $request  The HTTP request with customer data.
      *
      * @return Customer The updated customer.
      */
@@ -70,5 +81,20 @@ class CustomerRepository
     public function destroy(int $customer): void
     {
         Customer::destroy($customer);
+    }
+
+    /**
+     * Restores a customer by their unique identifier.
+     *
+     * @param int $customer The unique identifier of the customer to restore.
+     *
+     * @return void
+     */
+    public function restore(int $customer)
+    {
+        $restoreExist = Customer::withTrashed()->find($customer);
+
+        $restoreExist->restore();
+        return response()->json(['message' => 'Customer restored successfully']);
     }
 }
