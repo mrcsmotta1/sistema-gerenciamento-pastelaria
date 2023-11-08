@@ -4,7 +4,7 @@
  * MyClass File Doc Comment
  * php version 8.1
  *
- * @category Providerssss
+ * @category Providers
  * @package  App\Providers
  * @author   Marcos Motta <mrcsmotta1@gmail.com>
  * @license  MIT License
@@ -16,9 +16,9 @@ namespace App\Providers;
 use Faker\Provider\Base;
 
 /**
- * Arquivo Class CustomerController.
+ * Arquivo Class PhoneFormatProvider.
  *
- * Controller Customer.
+ * Providers Customer.
  *
  * @phpcs
  * php version 8.1
