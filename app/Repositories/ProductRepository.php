@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Repository
+ * @package  App\Repositories
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Repositories;
 
-use App\Http\Requests\ProductApiRequest;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Database\Eloquent\Collection;
@@ -48,19 +58,21 @@ class ProductRepository
     /**
      * Update an existing Product.
      *
-     * @param Product           $product The product to update.
-     * @param ProductApiRequest $request The HTTP request containing updated product data.
+     * @param Product $product The product to update.
+     * @param $request The HTTP request containing updated product data.
      *
      * @return Product The updated product.
      */
-    public function update(Product $product, ProductApiRequest $request): Product
+    public function update(Product $product, $request): Product
     {
-        $product = $product->fill($request->all());
+        $isBase64 = base64_encode(base64_decode($request['photo'], true)) === $request['photo'] ? true : false;
 
-        if (is_string($product->photo) && !File::exists(public_path($product->photo))) {
-            $pathImage = $this->productService->createImg($product->photo);
-            $product->photo = $pathImage;
+        if ($isBase64) {
+            $pathImage = $this->productService->createImg($request['photo']);
+            $request['photo'] = $pathImage;
         }
+
+        $product->update($request);
 
         $product->save();
 
@@ -105,7 +117,7 @@ class ProductRepository
     /**
      * Display the specified product.
      *
-     * @param \App\Models\Product $product The product to display.
+     * @param $product The product ID.
      *
      * @return \App\Models\Product The specified product.
      */
