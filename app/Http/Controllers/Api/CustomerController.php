@@ -1,12 +1,23 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Controller
+ * @package  App\Http\Controllers
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerApiRequest;
 use App\Models\Customer;
 use App\Repositories\CustomerRepository;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Arquivo Class CustomerController.
@@ -27,7 +38,7 @@ class CustomerController extends Controller
     /**
      * Create a new CustomerController instance.
      *
-     * @param CustomerRepository $customerRepository The repository for handling customer data.
+     * @param CustomerRepository $customerRepository The repository customer data.
      */
     public function __construct(private CustomerRepository $customerRepository)
     {
@@ -48,11 +59,16 @@ class CustomerController extends Controller
      *
      * @param \App\Http\Requests\CustomerApiRequest $request The customer data.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response with the newly created customer and HTTP status 201 (Created).
+     * @return \Illuminate\Http\JsonResponse A JSON response with new customer.
      */
     public function store(CustomerApiRequest $request)
     {
-        return response()->json($this->customerRepository->add($request));
+        return response()
+            ->json(
+                $this->customerRepository
+                    ->add($request),
+                Response::HTTP_CREATED
+            );
     }
 
     /**
@@ -67,7 +83,7 @@ class CustomerController extends Controller
         $result = Customer::find($customer);
 
         if (!$result) {
-            return response()->json(['message' => 'Customer not found'], 404);
+            return response()->json(['message' => 'Customer not found.'], 404);
         }
 
         return response()->json($result);
@@ -76,14 +92,26 @@ class CustomerController extends Controller
     /**
      * Update the specified customer in storage.
      *
+     * @param \App\Http\Requests\CustomerApiRequest $request  Customer data.
      * @param \App\Models\Customer                  $customer The customer to update.
-     * @param \App\Http\Requests\CustomerApiRequest $request  The updated customer data.
      *
-     * @return \Illuminate\Http\JsonResponse          A JSON response with the updated customer.
+     * @return \Illuminate\Http\JsonResponse A JSON response with the updated.
      */
-    public function update(Customer $customer, CustomerApiRequest $request)
+    public function update(CustomerApiRequest $request, $customer)
     {
-        return response()->json($this->customerRepository->update($customer, $request));
+        $customer = Customer::find($customer);
+
+        if (!$customer) {
+            return response()->json(['message' => 'Customer not found.'], 404);
+        }
+        return response()
+            ->json(
+                $this->customerRepository
+                    ->update(
+                        $customer,
+                        $request
+                    )
+            );
     }
 
     /**
@@ -95,6 +123,12 @@ class CustomerController extends Controller
      */
     public function destroy(int $customer)
     {
+        $customerExist = Customer::find($customer);
+
+        if (!$customerExist) {
+            return response()->json(['message' => 'Customer not found.'], 404);
+        }
+
         $this->customerRepository->destroy($customer);
         return response()->noContent();
     }
@@ -104,12 +138,16 @@ class CustomerController extends Controller
      *
      * @param int $customer The ID of the customer to restore.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response indicating the customer has been successfully restored.
+     * @return \Illuminate\Http\JsonResponse A JSON with successfully restored.
      */
     public function restore(int $customer)
     {
-        $restore = Customer::withTrashed()->where(['id' => $customer]);
-        $restore->restore();
-        return response()->json(['message' => 'Customer restored successfully']);
+        $restoreExist = Customer::withTrashed()->find($customer);
+
+        if (!$restoreExist) {
+            return response()->json(['message' => 'Customer not found.'], 404);
+        }
+
+        return $this->customerRepository->restore($customer);
     }
 }
