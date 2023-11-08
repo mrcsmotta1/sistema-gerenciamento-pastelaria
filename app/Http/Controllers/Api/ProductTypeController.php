@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Controller
+ * @package  App\Http\Controllers
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -27,7 +38,7 @@ class ProductTypeController extends Controller
     /**
      * Create a new ProductTypeController instance.
      *
-     * @param ProductTypeRepository $productTypeRepository The repository for handling product Type data.
+     * @param ProductTypeRepository $productTypeRepository The product Type.
      */
     public function __construct(private ProductTypeRepository $productTypeRepository)
     {
@@ -36,7 +47,7 @@ class ProductTypeController extends Controller
     /**
      * Display a listing of productType.
      *
-     * @return \Illuminate\Http\JsonResponse JSON response with a list of productType.
+     * @return \Illuminate\Http\JsonResponse JSON response with a list of productType
      */
     public function index()
     {
@@ -48,11 +59,16 @@ class ProductTypeController extends Controller
      *
      * @param \App\Http\Requests\ProductTypeApiRequest $request The productType data.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response with the newly created product type and HTTP status 201 (Created).
+     * @return \Illuminate\Http\JsonResponse A JSON with created product type
      */
     public function store(ProductTypeApiRequest $request)
     {
-        return response()->json($this->productTypeRepository->add($request), Response::HTTP_CREATED);
+        return response()
+            ->json(
+                $this->productTypeRepository
+                    ->add($request),
+                Response::HTTP_CREATED
+            );
     }
 
     /**
@@ -67,7 +83,7 @@ class ProductTypeController extends Controller
         $result = ProductType::find($productType);
 
         if (!$result) {
-            return response()->json(['message' => 'Oroduct Type not found'], 404);
+            return response()->json(['message' => 'Product Type not found.'], 404);
         }
 
         return response()->json($result);
@@ -76,14 +92,21 @@ class ProductTypeController extends Controller
     /**
      * Update the specified productType in storage.
      *
-     * @param \App\Models\ProductType                  $productType The productType to update.
-     * @param \App\Http\Requests\ProductTypeApiRequest $request     The updated productType data.
+     * @param \App\Models\ProductType                  $productType productType.
+     * @param \App\Http\Requests\ProductTypeApiRequest $request     ProductType data.
      *
-     * @return \Illuminate\Http\JsonResponse          A JSON response with the updated productType.
+     * @return \Illuminate\Http\JsonResponse A JSON with updated productType.
      */
     public function update(ProductType $productType, ProductTypeApiRequest $request)
     {
-        return response()->json($this->productTypeRepository->update($productType, $request));
+        return response()
+            ->json(
+                $this->productTypeRepository
+                    ->update(
+                        $productType,
+                        $request
+                    )
+            );
     }
 
     /**
@@ -104,11 +127,11 @@ class ProductTypeController extends Controller
      *
      * @param int $productType The ID of the productType to restore.
      *
-     * @return \Illuminate\Http\JsonResponse A JSON response indicating the product Type has been successfully restored.
+     * @return \Illuminate\Http\JsonResponse
      */
     public function restore(int $productType)
     {
         $this->productTypeRepository->restore($productType);
-        return response()->json(['message' => 'product type restored successfully']);
+        return response()->json(['message' => 'Product Type restored successfully']);
     }
 }
