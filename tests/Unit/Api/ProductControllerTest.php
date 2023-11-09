@@ -56,9 +56,9 @@ class ProductControllerTest extends TestCase
      * returns the product type as expected. It ensures that the system
      * is properly configured to fetch and return the product type.
      *
-     * @covers ProductController::get_index
+     * @return void
      */
-    public function test_get_index_product_type_must_return_product_type(): void
+    public function test_get_index_product_must_return_product_endpoint(): void
     {
         $productType = ProductType::factory(1)->createOne();
 
@@ -97,7 +97,7 @@ class ProductControllerTest extends TestCase
             $json->whereAll([
                 'name' => $products['name'],
                 'product_type_id' => $products['product_type_id'],
-                'price' => (double)$products['price'],
+                'price' => (double) $products['price'],
             ]);
         });
     }
@@ -109,11 +109,10 @@ class ProductControllerTest extends TestCase
      * with an image provided in base64 format. It should ensure that
      * the image is decoded correctly and associated with the created product.
      *
-     * @covers ProductController::create
+     * @return void
      */
-    public function test_store_products_endpoint()
+    public function test_store_product_endpoint(): void
     {
-
         Storage::fake('public');
 
         $productType = ProductType::factory(1)->createOne();
@@ -136,6 +135,11 @@ class ProductControllerTest extends TestCase
         $this->assertTrue(Storage::disk('public')->exists($filename2));
     }
 
+    /**
+     * Test the PUT request to update a product via the API endpoint.
+     *
+     * @return void
+     */
     public function test_put_update_product_endpoint(): void
     {
         Storage::fake('public');
@@ -144,7 +148,7 @@ class ProductControllerTest extends TestCase
 
         $products = [
             'name' => 'teste',
-            "product_type_id" => $productType->id,
+            "product_type_id" => $productType['id'],
             'price' => "19.99",
             'photo' => $this->base64Image,
         ];
@@ -156,7 +160,7 @@ class ProductControllerTest extends TestCase
 
         $productUpdate = [
             "name" => "Test Update",
-            "product_type_id" => 1,
+            "product_type_id" => $productType['id'],
             "price" => "10.10",
             "photo" => $this->base64Image,
         ];
@@ -164,6 +168,7 @@ class ProductControllerTest extends TestCase
         $response = $this->putJson("/api/products/{$idProduct}", $productUpdate);
 
         $contentPut = $response->json();
+
         $namePhoto = $contentPut['photo'];
 
         $response->assertStatus(200);
@@ -194,34 +199,17 @@ class ProductControllerTest extends TestCase
 
             $json->whereAll([
                 'name' => $productUpdate['name'],
-                'price' => (string)$productUpdate['price'],
+                'price' => (string) $productUpdate['price'],
                 'photo' => $namePhoto,
             ]);
         });
     }
 
-    public function test_create_product_must_be_valid_with_base64_image()
-    {
-
-        Storage::fake('public');
-
-        $productType = ProductType::factory(1)->createOne();
-
-        $base64Image = "data:image/png;base64,iVBORw0KGgoAAAANSUhYXBlLm9yZ5vuPBoAAADfSURBVDiNpdK9LkRBFA";
-
-        $response = $this->postJson('/api/products', [
-            'name' => 'teste',
-            "product_type_id" => $productType->id,
-            'price' => 19.99,
-            'photo' => $base64Image,
-        ]);
-
-        $response->assertStatus(422);
-        $response->assertJson([
-            'message' => 'O campo photo não possui um arquivo válido existente.',
-        ]);
-    }
-
+    /**
+     * Test the DELETE request to destroy a product via the API endpoint.
+     *
+     * @return void
+     */
     public function test_delete_destroy_product_endpoint(): void
     {
         Storage::fake('public');
@@ -245,9 +233,13 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(204);
     }
 
+    /**
+     * Test the POST request to restore a previously deleted product via the API endpoint.
+     *
+     * @return void
+     */
     public function test_post_restore_product_endpoint(): void
     {
-
         Storage::fake('public');
 
         $productType = ProductType::factory(1)->createOne();
@@ -271,6 +263,131 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'message' => 'Product restored successfully',
+        ]);
+    }
+
+    /**
+     * Test that creating a product with a base64 image is valid.
+     *
+     * @return void
+     */
+    public function test_create_product_must_be_valid_with_base64_image_endpoint(): void
+    {
+
+        Storage::fake('public');
+
+        $productType = ProductType::factory(1)->createOne();
+
+        $base64Image = "data:image/png;base64,iVBORw0KGgoAAAANSUhYXBlLm9yZ5vuPBoAAADfSURBVDiNpdK9LkRBFA";
+
+        $response = $this->postJson('/api/products', [
+            'name' => 'teste',
+            "product_type_id" => $productType->id,
+            'price' => 19.99,
+            'photo' => $base64Image,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo photo não possui um arquivo válido existente.',
+        ]);
+    }
+
+    /**
+     * Test that the 'product_type_id' field must exist when creating a product via the API endpoint.
+     *
+     * @return void
+     */
+    public function test_product_type_id_field_must_be_exist_when_creating_product_endpoint(): void
+    {
+
+        Storage::fake('public');
+
+        $response = $this->postJson('/api/products', [
+            'name' => 'teste',
+            "product_type_id" => 10,
+            'price' => 19.99,
+            'photo' => $this->base64Image,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo product type id não é um tipo de produto válido.',
+        ]);
+    }
+
+    /**
+     * Test that the 'name' field must exist when creating a product via the API endpoint.
+     *
+     * @return void
+     */
+    public function test_name_field_must_be_required_creating_product_endpoint(): void
+    {
+
+        Storage::fake('public');
+
+        $productType = ProductType::factory(1)->createOne();
+
+        $response = $this->postJson('/api/products', [
+            'name' => '',
+            "product_type_id" => $productType->id,
+            'price' => 19.99,
+            'photo' => $this->base64Image,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo name é obrigatório.',
+        ]);
+    }
+
+    /**
+     * Test that the 'price' field must exist when creating a product via the API endpoint.
+     *
+     * @return void
+     */
+    public function test_price_field_must_be_required_creating_product_endpoint(): void
+    {
+
+        Storage::fake('public');
+
+        $productType = ProductType::factory(1)->createOne();
+
+        $response = $this->postJson('/api/products', [
+            'name' => 'teste',
+            "product_type_id" => $productType->id,
+            'price' => '',
+            'photo' => $this->base64Image,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo price é obrigatório.',
+        ]);
+    }
+
+     /**
+     * Test that the 'price' field must be a have value freater than zero when creating a product via the API endpoint.
+     *
+     * @return void
+     */
+    public function test_price_field_must_be_have_value_greater_than_zero_when_creating_product_endpoint(): void
+    {
+
+        Storage::fake('public');
+
+        $productType = ProductType::factory(1)->createOne();
+
+        $response = $this->postJson('/api/products', [
+            'name' => 'Teste',
+            "product_type_id" => $productType->id,
+            'price' => 0,
+            'photo' => $this->base64Image,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo price deve ser maior que 0.00.',
         ]);
     }
 }
