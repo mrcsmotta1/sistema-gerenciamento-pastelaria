@@ -124,7 +124,7 @@ class OrderRepository
         $result = Order::with('items')->find($order);
 
         if (!$result) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return response()->json(['message' => 'Order not found.'], 404);
         }
 
         $return = [

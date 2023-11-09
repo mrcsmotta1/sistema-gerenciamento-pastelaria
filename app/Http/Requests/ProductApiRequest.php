@@ -40,7 +40,13 @@ class ProductApiRequest extends FormRequest
     {
         return [
             'name' => ['required', 'min:3', 'max:50'],
-            'price' => ['required', 'regex:/^\d+(\.\d{2})?$/', 'numeric', 'min:0.01'],
+            'price' => ['required','numeric', 'min:0.01','regex:/^-?(?:\d+|\d*\.\d+)$/',
+            function ($attribute, $value, $fail) {
+                $numero_formatado = number_format($value, 2, '.', '');
+                if ($numero_formatado !== (string)$value) {
+                    $fail('O campo ' .  $attribute . ' deve ser um float separado por ponto (ex: 1.00)');
+                }
+            },],
             'photo' => ['required', new Base64File()],
             'product_type_id' => ['required', 'integer', 'exists:product_types,id']
         ];
@@ -58,7 +64,6 @@ class ProductApiRequest extends FormRequest
             'name.string' => 'O campo :attribute deve ser uma string.',
             'name.max' => 'O campo :attribute não pode ter mais de 255 caracteres.',
             'price.required' => 'O campo :attribute é obrigatório.',
-            'price.numeric' => 'O campo :attribute deve ser um número separado por ponto (ex: 1.00).',
             'price.min' => 'O campo :attribute deve ser maior que 0.00.',
             'photo.required' => 'O campo :attribute é obrigatório.',
             'product_type_id.integer' => 'O campo :attribute deve ser um valor inteiro.',

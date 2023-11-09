@@ -54,7 +54,7 @@ class ProductTypeControllerTest extends TestCase
      *
      * @return void
      */
-    public function test_get_index_product_type_must_return_product_type(): void
+    public function test_get_index_product_type_must_return_product_type_endpoint(): void
     {
         $productType = ProductType::factory(3)->create();
         $response = $this->getJson('/api/product-types');
@@ -163,13 +163,15 @@ class ProductTypeControllerTest extends TestCase
      */
     public function test_put_update_product_type_endpoint(): void
     {
-        ProductType::factory(1)->createOne();
+        $result = ProductType::factory(1)->createOne();
+
+        $id = $result->id;
 
         $productType = [
             "name" => "Test Update",
         ];
 
-        $response = $this->putJson('/api/product-types/1', $productType);
+        $response = $this->putJson("/api/product-types/{$id}", $productType);
 
         $response->assertStatus(200);
         $response->assertJsonCount(5);
@@ -204,9 +206,10 @@ class ProductTypeControllerTest extends TestCase
      */
     public function test_delete_destroy_product_type_endpoint(): void
     {
-        ProductType::factory(1)->createOne();
+        $productType = ProductType::factory(1)->createOne();
+        $productTypeId = $productType['id'];
 
-        $response = $this->deleteJson('/api/product-types/1');
+        $response = $this->deleteJson("/api/product-types/{$productTypeId}");
 
         $response->assertStatus(204);
     }
@@ -221,11 +224,12 @@ class ProductTypeControllerTest extends TestCase
      */
     public function test_post_restore_product_type_endpoint(): void
     {
-        ProductType::factory(1)->createOne();
+        $rsultProdutoTypeId = ProductType::factory(1)->createOne();
+        $produtoTypeId = $rsultProdutoTypeId['id'];
 
-        $response = $this->deleteJson('/api/product-types/1');
+        $response = $this->deleteJson("/api/product-types/{$produtoTypeId}");
 
-        $response = $this->postJson('/api/product-types/1/restore');
+        $response = $this->postJson("/api/product-types/{$produtoTypeId}/restore");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -234,12 +238,31 @@ class ProductTypeControllerTest extends TestCase
     }
 
     /**
-     * Test that the "show" endpoint for a product type returns an error
+     * Test that the 'name' field must be required when creating a customer.
+     *
+     * This test verifies that the 'name' field is a required field when creating a customer.
+     * It checks that an error occurs when attempting to create a customer without a name.
+     */
+    public function test_name_field_must_be_required_when_creating_customer_endpoint(): void
+    {
+        $productType = ProductType::factory()->makeOne()->toArray();
+        unset($productType['name']);
+
+        $response = $this->postJson('/api/product-types', $productType);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'O campo name é obrigatório.',
+        ]);
+    }
+
+    /**
+     * Test if the id does not exist in the show endpoint should return an error
      * when the requested product type does not exist.
      *
      * @return void
      */
-    public function test_get_show_product_type_must_return_error_when_product_type_does_not_exist(): void
+    public function test_get_show_product_type_must_return_error_when_product_type_id_does_not_exist_endpoint(): void
     {
         $response = $this->getJson('/api/product-types/2');
 
@@ -250,22 +273,38 @@ class ProductTypeControllerTest extends TestCase
     }
 
     /**
-     * Test that the 'name' field must be required when creating a customer.
+     * Test if the id does not exist in the put endpoint should return an error
+     * when attempting to update a product type that does not exist.
      *
-     * This test verifies that the 'name' field is a required field when creating a customer.
-     * It checks that an error occurs when attempting to create a customer without a name.
+     * @return void
      */
-
-    public function test_name_field_must_be_required_when_creating_customer(): void
+    public function test_put_product_type_must_return_error_when_product_type_id_does_not_exist_endpoint(): void
     {
-        $productType = ProductType::factory()->makeOne()->toArray();
-        unset($productType['name']);
+        $productType = [
+            "name" => "Test Update",
+        ];
 
-        $response = $this->postJson('/api/product-types', $productType);
+        $response = $this->putJson('/api/product-types/32', $productType);
 
-        $response->assertStatus(422);
+        $response->assertStatus(404);
         $response->assertJson([
-            'message' => 'O campo name é obrigatório.',
+            'message' => 'Product Type not found.',
+        ]);
+    }
+
+    /**
+     * Test if the id does not exist in the delete endpoint should return an error
+     * when attempting to update a product type that does not exist.
+     *
+     * @return void
+     */
+    public function test_delete_product_type_must_return_error_when_product_type_id_does_not_exist_endpoint(): void
+    {
+        $response = $this->deleteJson('/api/product-types/32');
+
+        $response->assertStatus(404);
+        $response->assertJson([
+            'message' => 'Product Type not found.',
         ]);
     }
 }

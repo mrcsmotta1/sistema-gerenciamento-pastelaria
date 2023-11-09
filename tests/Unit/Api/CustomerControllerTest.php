@@ -51,8 +51,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'get_index_customers' method in the controller correctly
      * retrieves and returns a list of customers.
+     *
+     * @return void
      */
-    public function test_get_index_customers_must_return_customers(): void
+    public function test_get_index_customers_must_return_customers_endpoint(): void
     {
         $customers = Customer::factory(3)->create();
         $response = $this->getJson('/api/customers');
@@ -96,8 +98,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'store' endpoint in the customers controller correctly handles
      * the creation of new customers.
+     *
+     * @return void
      */
-    public function test_post_store_customers_endpoint(): void
+    public function test_post_store_customers_endpoint_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
 
@@ -138,6 +142,8 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'show' endpoint in the customers controller correctly retrieves
      * and returns a single customer based on the given identifier.
+     *
+     * @return void
      */
     public function test_get_show_single_customer_endpoint(): void
     {
@@ -196,10 +202,13 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'update' endpoint in the customers controller correctly handles
      * the update of customer information based on the provided data.
+     *
+     * @return void
      */
     public function test_put_update_customers_endpoint(): void
     {
-        Customer::factory(1)->createOne();
+        $result = Customer::factory(1)->createOne();
+        $id = $result['id'];
 
         $customer = [
             "name" => "Test Update",
@@ -212,7 +221,7 @@ class CustomerControllerTest extends TestCase
             "zipcode" => "01234-001",
         ];
 
-        $response = $this->putJson('/api/customers/1', $customer);
+        $response = $this->putJson("/api/customers/{$id}", $customer);
 
         $response->assertStatus(200);
         $response->assertJsonCount(12);
@@ -264,12 +273,15 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'soft deleted' endpoint in the customers controller correctly handles
      * the deletion of a customer based on the provided identifier.
+     *
+     * @return void
      */
     public function test_delete_destroy_customers_endpoint(): void
     {
-        Customer::factory(1)->createOne();
+        $result = Customer::factory(1)->createOne();
+        $id = $result['id'];
 
-        $response = $this->deleteJson('/api/customers/1');
+        $response = $this->deleteJson("/api/customers/{$id}");
 
         $response->assertStatus(204);
     }
@@ -279,14 +291,17 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'restore' endpoint in the customers controller correctly handles
      * the restoration of a soft-deleted customer based on the provided identifier.
+     *
+     * @return void
      */
     public function test_post_restore_customers_endpoint(): void
     {
-        Customer::factory(1)->createOne();
+        $result = Customer::factory(1)->createOne();
+        $id = $result["id"];
 
-        $response = $this->deleteJson('/api/customers/1');
+        $response = $this->deleteJson("/api/customers/{$id}");
 
-        $response = $this->postJson('/api/customers/1/restore');
+        $response = $this->postJson("/api/customers/{$id}/restore");
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -300,7 +315,7 @@ class CustomerControllerTest extends TestCase
      *
      * @return void
      */
-    public function test_get_show_customer_must_return_error_when_customer_does_not_exist(): void
+    public function test_get_show_customer_must_return_error_when_customer_does_not_exist_endpoint(): void
     {
         $response = $this->getJson('/api/customers/2');
 
@@ -319,7 +334,7 @@ class CustomerControllerTest extends TestCase
      *
      * @return void
      */
-    public function test_unique_email_constraint_when_creating_customer(): void
+    public function test_unique_email_constraint_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         $response = $this->postJson('/api/customers', $customer);
@@ -341,9 +356,10 @@ class CustomerControllerTest extends TestCase
      * This test ensures that the 'email' field in the Customer model is both unique and
      * required. It verifies that an error occurs when attempting to save a customer
      * without a unique email or with a missing email.
+     *
+     * @return void
      */
-
-    public function test_email_field_must_be_unique_and_required_when_creating_customer(): void
+    public function test_email_field_must_be_unique_and_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['email']);
@@ -361,9 +377,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'name' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a name.
+     *
+     * @return void
      */
-
-    public function test_name_field_must_be_required_when_creating_customer(): void
+    public function test_name_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['name']);
@@ -381,8 +398,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'phone' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a phone.
+     *
+     * @return void
      */
-    public function test_phone_field_must_be_required_when_creating_customer(): void
+    public function test_phone_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['phone']);
@@ -400,8 +419,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'date_of_birth' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a date of birth.
+     *
+     * @return void
      */
-    public function test_date_of_birth_field_must_be_required_when_creating_customer(): void
+    public function test_date_of_birth_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['date_of_birth']);
@@ -419,8 +440,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'address' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a address.
+     *
+     * @return void
      */
-    public function test_address_of_birth_field_must_be_required_when_creating_customer(): void
+    public function test_address_of_birth_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['address']);
@@ -438,8 +461,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'complement' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a complement.
+     *
+     * @return void
      */
-    public function test_complement_field_must_be_required_when_creating_customer(): void
+    public function test_complement_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['complement']);
@@ -457,8 +482,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'neighborhood' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a neighborhood.
+     *
+     * @return void
      */
-    public function test_neighborhood_field_must_be_required_when_creating_customer(): void
+    public function test_neighborhood_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['neighborhood']);
@@ -476,8 +503,10 @@ class CustomerControllerTest extends TestCase
      *
      * This test verifies that the 'zipcode' field is a required field when creating a customer.
      * It checks that an error occurs when attempting to create a customer without a zipcode.
+     *
+     * @return void
      */
-    public function test_zipcode_field_must_be_required_when_creating_customer(): void
+    public function test_zipcode_field_must_be_required_when_creating_customer_endpoint(): void
     {
         $customer = Customer::factory()->makeOne()->toArray();
         unset($customer['zipcode']);
