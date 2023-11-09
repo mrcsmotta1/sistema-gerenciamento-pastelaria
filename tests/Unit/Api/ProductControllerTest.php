@@ -387,7 +387,7 @@ class ProductControllerTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'message' => 'O campo price deve ser maior que 0.00.',
+            'message' => 'O campo price deve ser maior que 0.00. (and 1 more error)',
         ]);
     }
 }
