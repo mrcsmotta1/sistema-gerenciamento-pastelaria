@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * MyClass File Doc Comment
+ * php version 8.1
+ *
+ * @category Repository
+ * @package  App\Repositories
+ * @author   Marcos Motta <mrcsmotta1@gmail.com>
+ * @license  MIT License
+ * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
+ */
+
 namespace App\Repositories;
 
 use App\Http\Requests\ProductTypeApiRequest;
@@ -35,7 +46,7 @@ class ProductTypeRepository
     /**
      * Add a new product type.
      *
-     * @param ProductTypeApiRequest $request The HTTP request containing ProductType data.
+     * @param ProductTypeApiRequest $request The HTTP ProductType data.
      *
      * @return ProductType The newly created ProductType.
      */
@@ -47,14 +58,14 @@ class ProductTypeRepository
     /**
      * Update an existing ProductType.
      *
-     * @param ProductType           $ProductType The ProductType to update.
-     * @param ProductTypeApiRequest $request     The HTTP request containing updated ProductType data.
+     * @param ProductTypeApiRequest $request     The HTTP ProductType data.
+     * @param $productType The ProductType to update.
      *
      * @return ProductType The updated ProductType.
      */
-    public function update(ProductType $ProductType, ProductTypeApiRequest $request): ProductType
+    public function update(ProductTypeApiRequest $request, $productType): ProductType
     {
-        $ProductType = $ProductType->fill($request->all());
+        $ProductType = $productType->fill($request->all());
         $ProductType->save();
 
         return $ProductType;
