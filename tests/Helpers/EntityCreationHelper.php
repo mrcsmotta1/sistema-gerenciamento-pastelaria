@@ -39,7 +39,7 @@ class EntityCreationHelper
      *
      * @return int The ID of the created customer.
      */
-    public static function createCustomer($testInstance)
+    public static function createCustomer($testInstance): int
     {
         $customer = Customer::factory(1)->makeOne()->toArray();
         $responseCostumer = $testInstance->postJson('/api/customers', $customer);
@@ -50,13 +50,34 @@ class EntityCreationHelper
     }
 
     /**
+     * Create a customer and return the customer ID data of birth and email.
+     *
+     * @param \Tests\TestCase $testInstance The current test instance.
+     *
+     * @return array Customer ID data of birth and email
+     */
+    public static function createCustomerReturnEmailAndDateOfBirthAndaAdress($testInstance): array
+    {
+        $customer = Customer::factory(1)->makeOne()->toArray();
+        $responseCostumer = $testInstance->postJson('/api/customers', $customer);
+        $dataCustomer = $responseCostumer->getContent();
+        $customerDecode = json_decode($dataCustomer, true);
+
+        return  [
+            "id" => $customerDecode['id'],
+            "date_of_birth" => $customerDecode['date_of_birth'],
+            'email' => $customerDecode['email'],
+        ];
+    }
+
+    /**
      * Create a product type and return the product type ID.
      *
      * @param \Tests\TestCase $testInstance The current test instance.
      *
      * @return int The ID of the created product type.
      */
-    public static function createProductType($testInstance)
+    public static function createProductType($testInstance): int
     {
         $productType = ProductType::factory(1)->makeOne()->toArray();
         $responseProductType = $testInstance->postJson('/api/product-types', $productType);
@@ -75,7 +96,7 @@ class EntityCreationHelper
      *
      * @return int The ID of the created product.
      */
-    public static function createProduct($testInstance, $productTypeId, $base64Image)
+    public static function createProduct($testInstance, $productTypeId, $base64Image): int
     {
 
         $products = [
@@ -101,7 +122,7 @@ class EntityCreationHelper
      *
      * @return int The ID of the created order.
      */
-    public static function createOrder($testInstance, $customerId, $productId)
+    public static function createOrder($testInstance, $customerId, $productId): int
     {
 
         $data = [
