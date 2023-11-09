@@ -92,19 +92,25 @@ class ProductTypeController extends Controller
     /**
      * Update the specified productType in storage.
      *
-     * @param \App\Models\ProductType                  $productType productType.
      * @param \App\Http\Requests\ProductTypeApiRequest $request     ProductType data.
+     * @param $productType productTypeId.
      *
      * @return \Illuminate\Http\JsonResponse A JSON with updated productType.
      */
-    public function update(ProductType $productType, ProductTypeApiRequest $request)
+    public function update(ProductTypeApiRequest $request, $productType)
     {
+        $productType = ProductType::find($productType);
+
+        if (!$productType) {
+            return response()->json(['message' => 'Product Type not found.'], 404);
+        }
+
         return response()
             ->json(
                 $this->productTypeRepository
                     ->update(
-                        $productType,
-                        $request
+                        $request,
+                        $productType
                     )
             );
     }
@@ -118,6 +124,12 @@ class ProductTypeController extends Controller
      */
     public function destroy(string $productType)
     {
+        $productTypeExist = ProductType::find($productType);
+
+        if (!$productTypeExist) {
+            return response()->json(['message' => 'Product Type not found.'], 404);
+        }
+
         $this->productTypeRepository->destroy($productType);
         return response()->noContent();
     }
