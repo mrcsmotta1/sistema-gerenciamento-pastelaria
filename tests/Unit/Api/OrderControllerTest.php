@@ -13,7 +13,9 @@
 
 namespace Tests\Unit\Api;
 
+use App\Mail\OrderCreated;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\Helpers\EntityCreationHelper;
@@ -355,7 +357,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
-     /**
+    /**
      * Test that the 'name' field must be required when creating a order.
      *
      * This test verifies that the 'name' field is a required field when creating a order.
@@ -429,5 +431,48 @@ class OrderControllerTest extends TestCase
         $responseOrder->assertJson([
             'message' => 'O campo products.0.quantity é obrigatório.',
         ]);
+    }
+
+    /**
+     * Test the 'store' endpoint for send email by creating Order.
+     *
+     * This test verifies that the 'order' endpoint  must  send an email after ordering
+     *
+     * @return void
+     */
+    public function test_post_store_must_send_order_email_to_queue_endpoint(): void
+    {
+        Storage::fake('public');
+        Mail::fake();
+
+        $customer = EntityCreationHelper::createCustomerReturnEmailAndDateOfBirthAndaAdress($this);
+        $idCustomer = $customer['id'];
+        $dateOfBirthCustomer = $customer['date_of_birth'];
+        $emailCustomer = $customer['email'];
+
+        $idProductType = EntityCreationHelper::createProductType($this);
+
+        $idProduct = EntityCreationHelper::createProduct($this, $idProductType, $this->base64Image);
+
+        $data = [
+            "customer_id" => $idCustomer,
+            "products" => [
+                [
+                    "product_id" => $idProduct,
+                    "quantity" => 2,
+                ],
+            ],
+        ];
+
+        $responseOrder = $this->postJson('/api/orders', $data);
+        $resultOrder = json_decode($responseOrder->getContent())[0];
+        $idOrder = $resultOrder->order->id;
+
+        Mail::assertQueued(OrderCreated::class, function ($mail) use ($emailCustomer, $idOrder, $dateOfBirthCustomer) {
+            $this->assertEquals($mail->to[0]['address'], $emailCustomer);
+            $this->assertEquals($mail->order['id'], $idOrder);
+            $this->assertEquals($mail->order->customer['date_of_birth'], $dateOfBirthCustomer);
+            return true;
+        });
     }
 }
