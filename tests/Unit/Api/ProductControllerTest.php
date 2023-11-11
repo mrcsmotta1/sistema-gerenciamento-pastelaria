@@ -67,17 +67,16 @@ class ProductControllerTest extends TestCase
         $products = [
             'name' => 'teste',
             "product_type_id" => $productType->id,
-            'price' => "19.99",
+            'price' => 19.99,
             'photo' => $this->base64Image,
         ];
 
         $responseProductType = $this->postJson('/api/products', $products);
 
-        $content = $responseProductType->getContent();
-        $contentJson = json_decode($content, true);
-        $namePhoto = $contentJson[0]['product']['photo'];
+        $productType = json_decode($responseProductType->getContent());
+        $productTypeID = $productType[0]->product->id;
 
-        $responseProducts = $this->getJson('/api/products/1');
+        $responseProducts = $this->getJson("/api/products/{$productTypeID}");
 
         $responseProducts->assertStatus(200);
         $responseProducts->assertJsonCount(8);
@@ -97,7 +96,7 @@ class ProductControllerTest extends TestCase
             $json->whereAll([
                 'name' => $products['name'],
                 'product_type_id' => $products['product_type_id'],
-                'price' => (double) $products['price'],
+                'price' => $products['price'],
             ]);
         });
     }
