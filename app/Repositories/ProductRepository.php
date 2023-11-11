@@ -16,6 +16,7 @@ namespace App\Repositories;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -52,7 +53,9 @@ class ProductRepository
      */
     public function add($data): Product
     {
-        return $this->productService->createProduct($data);
+        return DB::transaction(function () use ($data) {
+            return $this->productService->createProduct($data);
+        });
     }
 
     /**
@@ -111,7 +114,9 @@ class ProductRepository
      */
     public function index(): Collection
     {
-        return Product::query()->orderBy('name')->get();
+        return DB::transaction(function () {
+            return Product::query()->orderBy('name')->get();
+        });
     }
 
     /**
