@@ -292,6 +292,8 @@ class OrderControllerTest extends TestCase
 
         $idOrder = EntityCreationHelper::createOrder($this, $idCustomer, $idProduct);
 
+        $this->deleteJson("/api/orders/{$idOrder}");
+
         $response = $this->postJson("/api/orders/{$idOrder}/restore");
 
         $response->assertStatus(200);
