@@ -44,3 +44,5 @@ Route::post('/products/{product}/restore', [ProductController::class, 'restore']
 
 Route::apiResource('/orders', OrderController::class);
 Route::post('/orders/{order}/restore', [OrderController::class, 'restore']);
+
+Route::get('/api/docs', '\L5Swagger\Http\Controllers\SwaggerController@api')->name('l5-swagger.api');

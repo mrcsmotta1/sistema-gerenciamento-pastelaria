@@ -74,11 +74,11 @@ class ProductTypeRepository
     /**
      * Delete a ProductType by their ID.
      *
-     * @param int $ProductType The ID of the ProductType to delete.
+     * @param string $ProductType The ID of the ProductType to delete.
      *
      * @return void
      */
-    public function destroy(int $ProductType): void
+    public function destroy(string $ProductType): void
     {
         ProductType::destroy($ProductType);
     }
@@ -86,11 +86,11 @@ class ProductTypeRepository
     /**
      * Restore a soft-deleted Product Type.
      *
-     * @param int $productType The ID of the productType to restore.
+     * @param string $productType The ID of the productType to restore.
      *
      * @return void
      */
-    public function restore(int $productType): void
+    public function restore(string $productType): void
     {
         $restore = ProductType::withTrashed()->where(['id' => $productType]);
         $restore->restore();

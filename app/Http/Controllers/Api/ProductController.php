@@ -30,6 +30,12 @@ use Symfony\Component\HttpFoundation\Response;
  * @license  MIT License
  * @link     https://github.com/mrcsmotta1/sistema-gerenciamento-pastelaria
  */
+/**
+ * @OA\Tag(
+ *     name="Product",
+ *     description="Product-related operations, including creation, consultation, updating, soft deletion and restoration."
+ * )
+ */
 class ProductController extends Controller
 {
     /**
@@ -50,10 +56,49 @@ class ProductController extends Controller
      * Display a listing of products.
      *
      * @return \Illuminate\Http\JsonResponse JSON response with a list of products.
+     *
+     * @OA\Get(
+     *     path="/api/products",
+     *     tags={"Product"},
+     *     summary="Get a list of products",
+     *     description="Retrieve a list of products.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of products.",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="product_type_id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="price", type="string", example="10.50"),
+     *                 @OA\Property(property="photo", type="string", example="storage/img/1699037097.jpg"),
+     *                 @OA\Property(property="created_at", type="string"),
+     *                 @OA\Property(property="updated_at", type="string"),
+     *                 @OA\Property(property="deleted_at", type="string")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Ocorreu um erro ao processar a solicitação."),
+     *         ),
+     *     ),
+     * )
      */
     public function index()
     {
-        return response()->json($this->productRepository->index());
+        try {
+            return response()->json($this->productRepository->index());
+        } catch (\Exception $th) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
+        }
+
     }
 
     /**
@@ -62,20 +107,75 @@ class ProductController extends Controller
      * @param \App\Http\Requests\ProductApiRequest $request The product data.
      *
      * @return \Illuminate\Http\JsonResponse A JSON response.
+     *
+     *  * @OA\Post(
+     *     path="/api/products",
+     *     tags={"Product"},
+     *     summary="Store a new product",
+     *     description="Store a new product.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"product_type_id", "name", "price", "photo"},
+     *             @OA\Property(property="product_type_id", type="integer", description="ID of the product", example=1),
+     *             @OA\Property(property="name", type="string", description="Name of the product"),
+     *             @OA\Property(property="price", type="string", description="Price of the product", example="10.50"),
+     *             @OA\Property(property="photo", type="string", description="Photo URL of the product ou Base64", example="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Product created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Product created successfully"),
+     *             @OA\Property(property="product", type="object",
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="price", type="string", example="10.50"),
+     *                 @OA\Property(property="product_type_id", type="integer", example=1),
+     *                 @OA\Property(property="photo", type="string", example="storage/img/1699647233.png"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Internal Server Error")
+     *         )
+     *     ),
+     * )
      */
     public function store(ProductApiRequest $request)
     {
-        $data = $request->all();
-        $modifiedBase64 = $this->base64File::getModifiedBase64();
-        $data['photo'] = $modifiedBase64;
+        try {
+            $data = $request->all();
+            $modifiedBase64 = $this->base64File::getModifiedBase64();
+            $data['photo'] = $modifiedBase64;
 
-        $product = $this->productRepository->add($data);
-        $message = [
-            'message' => 'Product created successfully',
-            'product' => $product,
-        ];
+            $product = $this->productRepository->add($data);
+            $message = [
+                'message' => 'Product created successfully',
+                'product' => $product,
+            ];
 
-        return response()->json([$message], Response::HTTP_CREATED);
+            return response()->json([$message], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
+        }
     }
 
     /**
@@ -84,12 +184,57 @@ class ProductController extends Controller
      * @param string $id The ID of the product to retrieve.
      *
      * @return Product $result
+     *
+     *  * @OA\Get(
+     *     path="/api/products/{productID}",
+     *     operationId="getProductById",
+     *     summary="Get product by ID",
+     *     tags={"Product"},
+     *     @OA\Parameter(
+     *         name="productID",
+     *         in="path",
+     *         description="ID of the product to retrieve",
+     *         required=true,
+     *         example=1,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="product_type_id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="price", type="string", example="10.50"),
+     *             @OA\Property(property="photo", type="string", example="storage/img/1699648415.png"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time"),
+     *             @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Product not found"),
+     *         )
+     *     ),
+     * )
      */
     public function show(string $id)
     {
-        $result = $this->productRepository->show($id);
+        try {
+            $result = $this->productRepository->show($id);
 
-        return $result;
+            return $result;
+        } catch (\Exception $e) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
+        }
     }
 
     /**
@@ -99,57 +244,191 @@ class ProductController extends Controller
      * @param \App\Models\Product                  $product The product to update.
      *
      * @return \Illuminate\Http\JsonResponse       A JSON response.
+     *
+     * @OA\Put(
+     *     path="/api/products/{productID}",
+     *     operationId="updateProduct",
+     *     summary="Update an existing product",
+     *     tags={"Product"},
+     *     @OA\Parameter(
+     *         name="productID",
+     *         in="path",
+     *         description="ID of the product to update",
+     *         required=true,
+     *         example=1,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="product_type_id", type="integer", example=1),
+     *                 @OA\Property(property="price", type="string", example="10.50"),
+     *                 @OA\Property(property="photo", type="string", example="storage/img/1699648415.png"),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="product_type_id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="price", type="string", example="10.50"),
+     *             @OA\Property(property="photo", type="string", example="storage/img/1699648415.png"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time"),
+     *             @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Product not found"),
+     *         )
+     *     ),
+     * )
      */
     public function update(ProductApiRequest $request, $product)
     {
-        $product = Product::find($product);
+        try {
+            $product = Product::find($product);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $data['photo'] = $this->base64File::getModifiedBase64() ?? $data['photo'];
+            $data['photo'] = $this->base64File::getModifiedBase64() ?? $data['photo'];
 
-        if (!$product) {
-            return response()->json(['message' => 'Product not found.'], 404);
+            if (!$product) {
+                return response()->json(['message' => 'Product not found.'], 404);
+            }
+
+            return response()
+                ->json($this->productRepository->update($product, $data));
+        } catch (\Exception $e) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
         }
-
-        return response()
-            ->json($this->productRepository->update($product, $data));
     }
 
     /**
      * Soft delete the specified product.
      *
-     * @param int $product $product The ID of the product to soft delete.
+     * @param string $product $product The ID of the product to soft delete.
      *
      * @return \Illuminate\Http\JsonResponse A JSON response indicating success.
+     *
+     * @OA\Delete(
+     *     path="/api/products/{productID}",
+     *     summary="Delete a product by ID",
+     *     description="Delete a product by ID (soft delete).",
+     *     operationId="productID",
+     *     tags={"Product"},
+     *     @OA\Parameter(
+     *         name="productID",
+     *         in="path",
+     *         description="ID of the product to delete",
+     *         required=true,
+     *         example=1,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="No content",
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Ocorreu um erro ao processar a solicitação."),
+     *         )
+     *     ),
+     * )
      */
-    public function destroy(int $product)
+    public function destroy(string $product)
     {
-        $productExist = Product::find($product);
+        try {
+            $productExist = Product::find($product);
 
-        if (!$productExist) {
-            return response()->json(['message' => 'Product not found.'], 404);
+            if (!$productExist) {
+                return response()->json(['message' => 'Product not found.'], 404);
+            }
+
+            $this->productRepository->destroy($product);
+            return response()->noContent();
+        } catch (\Exception $e) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
         }
-
-        $this->productRepository->destroy($product);
-        return response()->noContent();
     }
 
     /**
      * Restore a soft-deleted product.
      *
-     * @param int $product The ID of the product to restore.
+     * @param string $product The ID of the product to restore.
      *
      * @return \Illuminate\Http\JsonResponse A JSON response.
+     *
+     * @OA\Post(
+     *     path="/api/products/{productID}/restore",
+     *     summary="Restore a soft-deleted product by ID.",
+     *     tags={"Product"},
+     *     @OA\Parameter(
+     *         name="productID",
+     *         in="path",
+     *         description="ID of the soft-deleted product",
+     *         required=true,
+     *         example=1,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product restored successfully.",
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found.",
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Ocorreu um erro ao processar a solicitação."),
+     *         )
+     *     ),
+     * )
      */
-    public function restore(int $product)
+    public function restore(string $product)
     {
-        $productExist = Product::withTrashed()->find($product);
+        try {
+            $productExist = Product::onlyTrashed()->find($product);
 
-        if (!$productExist) {
-            return response()->json(['message' => 'Product not found.'], 404);
+            if (!$productExist) {
+                return response()->json(['message' => 'Product not found.'], 404);
+            }
+            $this->productRepository->restore($product);
+            return response()->json(['message' => 'Product restored successfully']);
+        } catch (\Exception $e) {
+            $message = "Ocorreu um erro ao processar a solicitação.";
+            $statusCode = 500;
+
+            return response()->json(['message' => $message], $statusCode);
         }
-        $this->productRepository->restore($product);
-        return response()->json(['message' => 'Product restored successfully']);
     }
 }

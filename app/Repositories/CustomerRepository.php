@@ -15,7 +15,7 @@ namespace App\Repositories;
 
 use App\Http\Requests\CustomerApiRequest;
 use App\Models\Customer;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class CustomerRepository
@@ -38,9 +38,11 @@ class CustomerRepository
      *
      * @return Customer The updated customer.
      */
-    public function index(): Collection
+    public function index()
     {
-        return Customer::query()->orderBy('name')->get();
+        return DB::transaction(function () {
+            return Customer::query()->orderBy('name')->get();
+        });
     }
 
     /**
@@ -52,7 +54,9 @@ class CustomerRepository
      */
     public function add(CustomerApiRequest $request): Customer
     {
-        return Customer::create($request->all());
+        return DB::transaction(function () use ($request) {
+            return Customer::create($request->all());
+        });
     }
 
     /**
@@ -62,6 +66,8 @@ class CustomerRepository
      * @param CustomerApiRequest $request  The HTTP request with customer data.
      *
      * @return Customer The updated customer.
+     *
+     *
      */
     public function update(Customer $customer, CustomerApiRequest $request): Customer
     {
@@ -74,11 +80,11 @@ class CustomerRepository
     /**
      * Delete a customer by their ID.
      *
-     * @param int $customer The ID of the customer to delete.
+     * @param string $customer The ID of the customer to delete.
      *
      * @return void
      */
-    public function destroy(int $customer): void
+    public function destroy(string $customer): void
     {
         Customer::destroy($customer);
     }
@@ -88,9 +94,9 @@ class CustomerRepository
      *
      * @param int $customer The unique identifier of the customer to restore.
      *
-     * @return void
+     * @return \Illuminate\Http\Response
      */
-    public function restore(int $customer)
+    public function restore(string $customer)
     {
         $restoreExist = Customer::withTrashed()->find($customer);
 

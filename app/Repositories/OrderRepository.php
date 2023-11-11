@@ -19,6 +19,7 @@ use App\Models\OrderItem;
 use App\Mail\OrderCreated;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\OrderApiRequest;
 
@@ -45,29 +46,31 @@ class OrderRepository
      */
     public function index(): JsonResponse
     {
-        $orders = Order::query()
-            ->with('items')
-            ->get();
+        return DB::transaction(function () {
+            $orders = Order::query()
+                ->with('items')
+                ->get();
 
-        $formattedOrders = $orders->map(
-            function ($order) {
-                return [
-                    'order_id' => $order->id,
-                    'customer_id' => $order->customer_id,
-                    'creation_date' => $order->created_at->format('Y-m-d H:i:s'),
-                    'products' => $order->items->map(
-                        function ($item) {
-                            return [
-                                'product_id' => $item->product_id,
-                                'quantity' => $item->quantity,
-                            ];
-                        }
-                    ),
-                ];
-            }
-        );
+            $formattedOrders = $orders->map(
+                function ($order) {
+                    return [
+                        'order_id' => $order->id,
+                        'customer_id' => $order->customer_id,
+                        'creation_date' => $order->created_at->format('Y-m-d H:i:s'),
+                        'products' => $order->items->map(
+                            function ($item) {
+                                return [
+                                    'product_id' => $item->product_id,
+                                    'quantity' => $item->quantity,
+                                ];
+                            }
+                        ),
+                    ];
+                }
+            );
 
-        return response()->json($formattedOrders);
+            return response()->json($formattedOrders);
+        });
     }
 
     /**
@@ -238,11 +241,11 @@ class OrderRepository
     /**
      * Restores a soft-deleted order by its ID.
      *
-     * @param int $order The ID of the order to be restored.
+     * @param string $order The ID of the order to be restored.
      *
      * @return JsonResponse A JSON response indicating the result of the update.
      */
-    public function restore(int $order): JsonResponse
+    public function restore(string $order): JsonResponse
     {
         $restore = Order::withTrashed()->find($order);
         $restore->restore();
